@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Matrix.h"
+#include "src/Matrix.h"
 
 int main(int argc, char *argv[])
 {
