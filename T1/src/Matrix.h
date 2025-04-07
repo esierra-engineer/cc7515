@@ -1,6 +1,6 @@
 #include <cstddef>
 #include <memory>
-#include <ostream>
+#include <iostream>
 #include <string>
 #include <tuple>
 
@@ -8,8 +8,8 @@ class Matrix
 {
 private:
     std::unique_ptr<double[]> mat; // Store the matrix
-    int n = 0;                     // Number of rows
-    int m = 0;                     // Number of columns
+    int _n = 0;                     // Number of rows
+    int _m = 0;                     // Number of columns
 
 public:
     Matrix();                            // Empty constructor
