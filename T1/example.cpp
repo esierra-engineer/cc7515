@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
      * 1 0
      */
 
-    //std::cout << mat(2, 0) << std::endl; /* get(fila, columna) */
+    std::cout << mat(2, 0) << std::endl; /* get(fila, columna) */
     /**
      * 1
      */

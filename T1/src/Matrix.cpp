@@ -25,12 +25,12 @@ Matrix::Matrix(const Matrix &matrix) : n(matrix.n), m(matrix.m),
 Matrix::~Matrix() {}
 
 double &Matrix::operator()(std::size_t x, std::size_t y) {
-    if (x >= n || y >= m) throw std::out_of_range("Index out of bounds");
+    if (x >= n || y >= m) throw std::out_of_range("[MATRIX] index out of bounds");
     return mat[x * m + y];
 }
 
 const double &Matrix::operator()(std::size_t x, std::size_t y) const {
-    if (x >= n || y >= m) throw std::out_of_range("Index out of bounds");
+    if (x >= n || y >= m) throw std::out_of_range("[MATRIX] index out of bounds");
     return mat[x * m + y];
 }
 
@@ -64,8 +64,10 @@ std::ostream &operator<<(std::ostream &os, const Matrix &matrix) {
 }
 
 std::istream &operator>>(std::istream &is, Matrix &matrix) {
+    std::cout << "Ingrese el tamaño de la matriz: ";
     is >> matrix.n >> matrix.m;
     matrix.mat = std::make_unique<double[]>(matrix.n * matrix.m);
+    std::cout << "Ingrese los valores de la matriz: ";
     for (int i = 0; i < matrix.n * matrix.m; ++i)
         is >> matrix.mat[i];
     return is;
@@ -93,7 +95,7 @@ Matrix &Matrix::operator=(const Matrix &matrix) {
 
 Matrix &Matrix::operator*=(const Matrix &matrix) {
     if (m != matrix.n)
-        throw std::logic_error("[MATRIX] Cannot multiply: incompatible dimensions");
+        throw std::logic_error("[MATRIX] cannot multiply: incompatible dimensions");
 
     auto result = std::make_unique<double[]>(n * matrix.m);
     for (int i = 0; i < n; ++i)
@@ -116,7 +118,7 @@ Matrix &Matrix::operator*=(double a) {
 
 Matrix &Matrix::operator+=(const Matrix &matrix) {
     if (n != matrix.n || m != matrix.m)
-        throw std::logic_error("[MATRIX] Cannot add: size mismatch");
+        throw std::logic_error("[MATRIX] cannot add: size mismatch");
     for (int i = 0; i < n * m; ++i)
         mat[i] += matrix.mat[i];
     return *this;
@@ -124,7 +126,7 @@ Matrix &Matrix::operator+=(const Matrix &matrix) {
 
 Matrix &Matrix::operator-=(const Matrix &matrix) {
     if (n != matrix.n || m != matrix.m)
-        throw std::logic_error("[MATRIX] Cannot subtract: size mismatch");
+        throw std::logic_error("[MATRIX] cannot subtract: size mismatch");
     for (int i = 0; i < n * m; ++i)
         mat[i] -= matrix.mat[i];
     return *this;
