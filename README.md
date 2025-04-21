@@ -10,8 +10,7 @@
     │   ├── Matrix.cpp
     │   └── Matrix.h
     └── test
-        ├── Matrix_test.cpp
-        └── tests.cpp
+        └── Matrix_test.cpp
 ```
 ## Implementación
 ### Matrix.cpp
