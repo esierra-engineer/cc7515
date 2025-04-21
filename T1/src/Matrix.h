@@ -12,6 +12,8 @@ private:
     int _m = 0;                     // Number of columns
 
 public:
+    int n = _n;
+    int m = _m;
     Matrix();                            // Empty constructor
     Matrix(int n);                       // Constructor, vector like [1xn]
     Matrix(int n, int m);                // Constructor [nxm], n:rows, m: columns

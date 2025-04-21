@@ -1,127 +1,140 @@
-//
-// Created by erick on 4/6/25.
-//
-
+// Matrix.cpp
 #include "Matrix.h"
-#include <memory>
+#include "make_unique.h"
+#include <stdexcept>
+#include <algorithm>
+#include <iomanip>
+#include <fstream>
 
-Matrix::Matrix() : Matrix(1,1){
+
+Matrix::Matrix() {}
+
+Matrix::Matrix(int n) : n(1), m(n), mat(std::make_unique<double[]>(n)) {
+    std::fill(mat.get(), mat.get() + m, 0.0);
 }
 
-// Constructor, vector like [1xn]
-Matrix::Matrix(int n) : _n(n), mat(new double[n]) {
-    for (int i = 0; i < _n; ++i) {
-        mat[i] = 0.0;
-    }
+Matrix::Matrix(int n, int m) : n(n), m(m), mat(std::make_unique<double[]>(n * m)) {
+    std::fill(mat.get(), mat.get() + n * m, 0.0);
 }
 
-// Constructor [nxm], n:rows, m: columns
-Matrix::Matrix(int n, int m) : _n(n), _m(m), mat(new double[n * m]) {
-    fill(0);
+Matrix::Matrix(const Matrix &matrix) : n(matrix.n), m(matrix.m),
+    mat(std::make_unique<double[]>(n * m)) {
+    std::copy(matrix.mat.get(), matrix.mat.get() + n * m, mat.get());
 }
 
+Matrix::~Matrix() {}
 
-Matrix::Matrix(const std::string &filename){
-} // Constructor that reads from a file, any format is valid
-
-
-Matrix::Matrix(const Matrix &
-           matrix){
-} // Copy constructor, https://www.geeksforgeeks.org/copy-constructor-in-cpp/
-
-
-Matrix::~Matrix() {
-    ;
+double &Matrix::operator()(std::size_t x, std::size_t y) {
+    if (x >= n || y >= m) throw std::out_of_range("Index out of bounds");
+    return mat[x * m + y];
 }
 
-// Set value to (i,j) <row,column>
-double& Matrix::operator()(std::size_t x, std::size_t y){
-    const int i = x * _m + y;
-    return mat[i];
+const double &Matrix::operator()(std::size_t x, std::size_t y) const {
+    if (x >= n || y >= m) throw std::out_of_range("Index out of bounds");
+    return mat[x * m + y];
 }
 
-const double& Matrix::operator()(std::size_t x, std::size_t y) const{
-    const int i = x * _m + y;
-    return mat[i];
+void Matrix::fill(double value) {
+    std::fill(mat.get(), mat.get() + n * m, value);
 }
 
-std::ostream &operator<<(std::ostream &os, const Matrix &mat) {
-    for (int i = 0; i < mat._n; ++i) {
-        for (int j = 0; j < mat._m; ++j) {
-            os << mat(i, j) << " ";
-        }
-        printf("\n");
+std::tuple<int, int> Matrix::size() const {
+    return std::make_tuple(n, m);
+}
+
+int Matrix::length() const {
+    return std::max(n, m);
+}
+
+double Matrix::max() const {
+    return *std::max_element(mat.get(), mat.get() + n * m);
+}
+
+double Matrix::min() const {
+    return *std::min_element(mat.get(), mat.get() + n * m);
+}
+
+std::ostream &operator<<(std::ostream &os, const Matrix &matrix) {
+    for (int i = 0; i < matrix.n; ++i) {
+        for (int j = 0; j < matrix.m; ++j)
+            os << std::fixed << std::setprecision(2) << matrix(i, j) << " ";
+        os << std::endl;
     }
     return os;
 }
 
-std::istream &operator>>(std::istream &is, Matrix &mat) {
-    int x,y;
-    printf("ingrese tamaño:\n");
-    is >> x;
-    is >> y;
-
-    mat._n = x;
-    mat._m = y;
-
-    const int size = x * y;
-
-    printf("ingrese los valores (%i):\n", size);
-    for (int i = 0; i < x * y; ++i) {
-        is >> mat.mat[i];
-    }
-
+std::istream &operator>>(std::istream &is, Matrix &matrix) {
+    is >> matrix.n >> matrix.m;
+    matrix.mat = std::make_unique<double[]>(matrix.n * matrix.m);
+    for (int i = 0; i < matrix.n * matrix.m; ++i)
+        is >> matrix.mat[i];
     return is;
 }
 
-void Matrix::fill(double value) {
-    for (int i = 0; i < _n * _m; ++i) {
-        mat[i] = value;
-    }
-}  // Fill all the matrix with a value
-
-// Dimensions
-// matrix, e.g. [2,4], 2 rows, 4 columns
-std::tuple<int, int> Matrix::size() const {
-    return std::make_tuple(_n, _m);
+bool Matrix::operator==(const Matrix &matrix) const {
+    if (n != matrix.n || m != matrix.m) return false;
+    for (int i = 0; i < n * m; ++i)
+        if (mat[i] != matrix.mat[i]) return false;
+    return true;
 }
 
-int Matrix::length() const{
-       return std::max(_n, _m);
+bool Matrix::operator!=(const Matrix &matrix) const {
+    return !(*this == matrix);
 }
 
-double Matrix::max() const {
-    double maximum = mat[0];
-    for (int i = 1; i < _n * _m; ++i) {
-        if (mat[i] > maximum) {
-            maximum = mat[i];
+Matrix &Matrix::operator=(const Matrix &matrix) {
+    if (this == &matrix) return *this;
+    n = matrix.n;
+    m = matrix.m;
+    mat = std::make_unique<double[]>(n * m);
+    std::copy(matrix.mat.get(), matrix.mat.get() + n * m, mat.get());
+    return *this;
+}
+
+Matrix &Matrix::operator*=(const Matrix &matrix) {
+    if (m != matrix.n)
+        throw std::logic_error("[MATRIX] Cannot multiply: incompatible dimensions");
+
+    auto result = std::make_unique<double[]>(n * matrix.m);
+    for (int i = 0; i < n; ++i)
+        for (int j = 0; j < matrix.m; ++j) {
+            result[i * matrix.m + j] = 0;
+            for (int k = 0; k < m; ++k)
+                result[i * matrix.m + j] += (*this)(i, k) * matrix(k, j);
         }
-    }
-    return maximum;
-} // Maximum value of the matrix
 
-double Matrix::min() const {
-    double minimum = mat[0];
-    for (int i = 1; i < _n * _m; ++i) {
-        if (mat[i] < minimum) {
-            minimum = mat[i];
-        }
-    }
-    return minimum;
-} // Minimum value of the matrix
+    m = matrix.m;
+    mat = std::move(result);
+    return *this;
+}
 
-// Booleans
-bool operator==(const Matrix &matrix) {
-    bool size_condition, values_condition = false;
+Matrix &Matrix::operator*=(double a) {
+    for (int i = 0; i < n * m; ++i)
+        mat[i] *= a;
+    return *this;
+}
 
-    return size_condition and values_condition;
-} // Equal operator
-bool operator!=(const Matrix &matrix) {return false;} // Not equal operator
+Matrix &Matrix::operator+=(const Matrix &matrix) {
+    if (n != matrix.n || m != matrix.m)
+        throw std::logic_error("[MATRIX] Cannot add: size mismatch");
+    for (int i = 0; i < n * m; ++i)
+        mat[i] += matrix.mat[i];
+    return *this;
+}
 
-// Mathematical operation
-Matrix &operator=(const Matrix &matrix);  // Assignment operator (copy)
-Matrix &operator*=(const Matrix &matrix); // Multiplication
-Matrix &operator*=(double a);             // Multiply by a constant
-Matrix &operator+=(const Matrix &matrix); // Add
-Matrix &operator-=(const Matrix &matrix); // Substract
-void transpose();                         // Transpose the matrix
+Matrix &Matrix::operator-=(const Matrix &matrix) {
+    if (n != matrix.n || m != matrix.m)
+        throw std::logic_error("[MATRIX] Cannot subtract: size mismatch");
+    for (int i = 0; i < n * m; ++i)
+        mat[i] -= matrix.mat[i];
+    return *this;
+}
+
+void Matrix::transpose() {
+    auto result = std::make_unique<double[]>(m * n);
+    for (int i = 0; i < n; ++i)
+        for (int j = 0; j < m; ++j)
+            result[j * n + i] = (*this)(i, j);
+    std::swap(n, m);
+    mat = std::move(result);
+}
