@@ -13,10 +13,10 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 # Agregar los archivos fuente
-add_library(MatrixLib T1/src/Matrix.cpp)
+add_library(MatrixLib src/Matrix.cpp)
 
 # Test executable
-add_executable(MatrixTest T1/test/Matrix_test.cpp)
+add_executable(MatrixTest test/Matrix_test.cpp)
 target_link_libraries(MatrixTest PRIVATE MatrixLib gtest_main)
 
 enable_testing()
